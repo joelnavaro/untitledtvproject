@@ -28,7 +28,11 @@ struct RowView : View {
             Image(systemName: "arrow.up.and.down.and.arrow.left.and.right")
                 .onTapGesture {
                     showingAlert = true
-                    listenToFireStore()
+                    listenToFireStore(collection: "watching")
+                    listenToFireStore(collection: "completed")
+                    listenToFireStore(collection: "dropped")
+                    listenToFireStore(collection: "wantToWatch")
+                    listenToFireStore(collection: "recentlyDeleted")
                     //fireStoreManager.listenToFireStore()
                 }
             Text(showView.show.name)
@@ -55,104 +59,48 @@ struct RowView : View {
             }
         }
     }
-    func listenToFireStore() { //should probably make this shorter
+    func listenToFireStore(collection: String) {
         
         guard let user = Auth.auth().currentUser else {return}
         
-        db.collection("users").document(user.uid).collection("watching").addSnapshotListener { snapshot, err in
+        db.collection("users").document(user.uid).collection(collection).addSnapshotListener { snapshot, err in
             guard let snapshot = snapshot else {return}
             
             if let err = err {
                 print("Error getting document \(err)")
             } else {
-                showList.lists[.watching]?.removeAll()
-                for document in snapshot.documents {
-                    let result = Result {
-                        try document.data(as: ApiShows.ShowReturned.self)
-                    }
-                    switch result  {
-                    case .success(let show)  :
-                        showList.lists[.watching]?.append(show)
-                    case .failure(let error) :
-                        print("Error decoding item: \(error)")
-                    }
+                
+            //clear the list corresponding to the collection
+                if collection == "watching"{
+                    showList.lists[.watching]?.removeAll()
+                }else if collection == "completed"{
+                    showList.lists[.completed]?.removeAll()
+                }else if collection == "dropped"{
+                    showList.lists[.dropped]?.removeAll()
+                }else if collection == "wantToWatch"{
+                    showList.lists[.wantToWatch]?.removeAll()
+                }else if collection == "recentlyDeleted"{
+                    showList.lists[.recentlyDeleted]?.removeAll()
                 }
-            }
-        }
-        db.collection("users").document(user.uid).collection("completed").addSnapshotListener { snapshot, err in
-            guard let snapshot = snapshot else {return}
-            
-            if let err = err {
-                print("Error getting document \(err)")
-            } else {
-                showList.lists[.completed]?.removeAll()
+                
                 for document in snapshot.documents {
                     let result = Result {
                         try document.data(as: ApiShows.ShowReturned.self)
                     }
                     switch result  {
                     case .success(let show)  :
-                        showList.lists[.completed]?.append(show)
-                    case .failure(let error) :
-                        print("Error decoding item: \(error)")
-                    }
-                }
-            }
-        }
-        db.collection("users").document(user.uid).collection("dropped").addSnapshotListener { snapshot, err in
-            guard let snapshot = snapshot else {return}
-            
-            if let err = err {
-                print("Error getting document \(err)")
-            } else {
-                showList.lists[.dropped]?.removeAll()
-                for document in snapshot.documents {
-                    let result = Result {
-                        try document.data(as: ApiShows.ShowReturned.self)
-                    }
-                    switch result  {
-                    case .success(let show)  :
-                        showList.lists[.dropped]?.append(show)
-                    case .failure(let error) :
-                        print("Error decoding item: \(error)")
-                    }
-                }
-            }
-        }
-        db.collection("users").document(user.uid).collection("wantToWatch").addSnapshotListener { snapshot, err in
-            guard let snapshot = snapshot else {return}
-            
-            if let err = err {
-                print("Error getting document \(err)")
-            } else {
-                showList.lists[.wantToWatch]?.removeAll()
-                for document in snapshot.documents {
-                    let result = Result {
-                        try document.data(as: ApiShows.ShowReturned.self)
-                    }
-                    switch result  {
-                    case .success(let show)  :
-                        showList.lists[.wantToWatch]?.append(show)
-                    case .failure(let error) :
-                        print("Error decoding item: \(error)")
-                    }
-                }
-            }
-        }
-        db.collection("users").document(user.uid).collection("recentlyDeleted").addSnapshotListener { snapshot, err in
-            guard let snapshot = snapshot else {return}
-            
-            if let err = err {
-                print("Error getting document \(err)")
-            } else {
-                showList.lists[.recentlyDeleted]?.removeAll()
-                for document in snapshot.documents {
-                    let result = Result {
-                        try document.data(as: ApiShows.ShowReturned.self)
-                    }
-                    switch result  {
-                    case .success(let show)  :
-                        showList.lists[.recentlyDeleted]?.append(show)
+                //adds the show to the corresponding list
+                        if collection == "watching"{
+                            showList.lists[.watching]?.append(show)
+                        }else if collection == "completed"{
+                            showList.lists[.completed]?.append(show)
+                        }else if collection == "dropped"{
+                            showList.lists[.dropped]?.append(show)
+                        }else if collection == "wantToWatch"{
+                            showList.lists[.wantToWatch]?.append(show)
+                        }else if collection == "recentlyDeleted"{
+                            showList.lists[.recentlyDeleted]?.append(show)
+                        }
                     case .failure(let error) :
                         print("Error decoding item: \(error)")
                     }

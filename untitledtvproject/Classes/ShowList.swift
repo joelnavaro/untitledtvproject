@@ -12,14 +12,14 @@ import Firebase
 import FirebaseFirestoreSwift
 import FirebaseFirestore
 
-enum Status {
-    case shows
-    case wantToWatch
-    case watching
-    case completed
-    case dropped
-    case recentlyDeleted
-    case searchList
+enum Status: String {
+    case shows = "show"
+    case wantToWatch = "wantToWatch"
+    case watching = "watching"
+    case completed = "completed"
+    case dropped = "dropped"
+    case recentlyDeleted = "recentlyDeleted"
+    case searchList = "searchList"
 }
 class ShowList : ObservableObject {
     
